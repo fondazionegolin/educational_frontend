@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Prompt Collector</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
     <link rel="stylesheet" href="/static/css/styles.css">
     <audio id="typewriterSound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjIwLjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAGAAAESAAzMzMzMzMzMzMzMzMzMzMzZmZmZmZmZmZmZmZmZmZmZpiYmJiYmJiYmJiYmJiYmJjMzMzMzMzMzMzMzMzMzMzM/////////////////////wAAAABMYXZjNTguMzUAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARMQU1FMy45OS41VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EMQpg8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" preload="auto"></audio>
@@ -14,8 +15,14 @@
             <div id="header-inputs" class="{% if not show_header %}hidden{% endif %}">
                 <div id="user-code-display"></div>
                 <div class="input-row">
-                    <input type="text" id="classe" placeholder="Classe..." required>
-                    <input type="text" id="gruppo" placeholder="Nome Gruppo..." required>
+                    <div class="input-group">
+                        <label for="classe">Classe</label>
+                        <input type="text" id="classe" placeholder="Inserisci la classe..." required>
+                    </div>
+                    <div class="input-group">
+                        <label for="gruppo">Gruppo</label>
+                        <input type="text" id="gruppo" placeholder="Inserisci il nome del gruppo..." required>
+                    </div>
                 </div>
             </div>
             
@@ -34,7 +41,7 @@
     <div id="prompt-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <h3>Inserisci Prompt</h3>
-            <textarea id="prompt-input" rows="4"></textarea>
+            <textarea id="prompt-input" rows="4" placeholder="Scrivi il tuo prompt qui..."></textarea>
             <div class="modal-buttons">
                 <button id="save-prompt">Salva</button>
                 <button id="close-modal">Chiudi</button>

@@ -1,75 +1,45 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const sections = ['VECCHIAIA', 'MATURITÀ', 'INFANZIA'];
-    let currentSectionIndex = 0;
-    
-    // Generate a random 5-digit code
-    let userCode = Math.floor(10000 + Math.random() * 90000).toString();
-    
-    // Display user code
-    const userCodeDisplay = document.getElementById('user-code-display');
-    userCodeDisplay.textContent = `Codice Gruppo: ${userCode}`;
-    
-    let prompts = {
-        user_data: {
-            classe: '',
-            user_code: userCode,
-            gruppo: ''
+    const sections = [
+        {
+            key: 'old',
+            title: 'Vecchiaia',
+            example: 'Example: "An elderly gardener with weathered hands and gentle eyes, tending to a lush Mediterranean garden filled with olive trees and aromatic herbs. Soft afternoon sunlight filters through the branches, creating dappled shadows. Photorealistic style with warm, earthy tones."'
         },
-        prompts: {
-            old: ['', '', '', ''],
-            recent: ['', '', '', ''],
-            childhood: ['', '', '', '']
+        {
+            key: 'recent',
+            title: 'Maturità',
+            example: 'Example: "A determined professional in their 40s working in a modern office space with floor-to-ceiling windows overlooking a vibrant cityscape. Sleek design elements and technology seamlessly integrated into the environment. Contemporary digital art style with dynamic lighting."'
+        },
+        {
+            key: 'childhood',
+            title: 'Infanzia',
+            example: 'Example: "A curious child exploring a whimsical playground filled with colorful geometric shapes and fantastical elements. Floating bubbles and paper airplanes in the air, surrounded by imaginative toys. Stylized illustration with bright, playful colors."'
         }
-    };
+    ];
 
+    let currentSectionIndex = -1; // Start at -1 for landing page
+    let currentSectionKey = '';
+    let activePromptElement = null;
+    let userCode = '';
+    let userData = {
+        classe: '',
+        gruppo: ''
+    };
+    
     const modal = document.getElementById('prompt-modal');
     const promptInput = document.getElementById('prompt-input');
-    promptInput.contentEditable = 'false'; 
-    promptInput.innerHTML = '';
     const sectionsContainer = document.getElementById('sections-container');
     const prevButton = document.getElementById('prev-section');
     const nextButton = document.getElementById('next-section');
-    const classeInput = document.getElementById('classe');
-    const gruppoInput = document.getElementById('gruppo');
     
-    let activePromptElement = null;
-    let currentSectionKey = '';
-
-    function playTypewriterSound() {
-        const sound = document.getElementById('typewriterSound');
-        sound.currentTime = 0;
-        sound.play().catch(e => console.log('Audio play failed:', e));
-    }
-
-    // Add input event for contenteditable
-    promptInput.addEventListener('input', (e) => {
-        if (e.inputType === 'insertText') {
-            playTypewriterSound();
+    // Initialize prompts object
+    const prompts = {
+        prompts: {
+            old: Array(4).fill(''),
+            recent: Array(4).fill(''),
+            childhood: Array(4).fill('')
         }
-    });
-
-    document.querySelectorAll('input[type="text"]').forEach(input => {
-        input.addEventListener('input', (e) => {
-            if (e.inputType === 'insertText') {
-                playTypewriterSound();
-            }
-            validateHeaderInputs();
-        });
-    });
-
-    function updateNavigationButtonsText() {
-        if (currentSectionIndex === 0) {
-            nextButton.textContent = 'MATURITÀ →';
-            prevButton.style.display = 'none';
-        } else if (currentSectionIndex === 1) {
-            nextButton.textContent = 'INFANZIA →';
-            prevButton.textContent = '← VECCHIAIA';
-            prevButton.style.display = 'block';
-        } else if (currentSectionIndex === 2) {
-            nextButton.textContent = 'RIEPILOGO →';
-            prevButton.textContent = '← MATURITÀ';
-        }
-    }
+    };
 
     function getSectionKey(index) {
         const sectionMap = {
@@ -79,67 +49,129 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         return sectionMap[index];
     }
-
-    function createSection(title) {
-        currentSectionKey = getSectionKey(currentSectionIndex);
-        const section = document.createElement('div');
-        section.className = 'section';
-        section.setAttribute('data-section', currentSectionKey);
-        section.innerHTML = `
-            <h2 class="section-title">${title}</h2>
-            <div class="prompt-grid">
-                ${Array.from({length: 4}, (_, i) => `
-                    <div class="prompt-box" data-prompt="${i}">
-                        <p>Prompt ${i + 1}</p>
-                        <div class="prompt-content"></div>
+    
+    function createSection(section) {
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'section';
+        sectionDiv.dataset.section = section.key;
+        
+        const title = document.createElement('h2');
+        title.className = 'section-title';
+        title.textContent = section.title;
+        sectionDiv.appendChild(title);
+        
+        const example = document.createElement('div');
+        example.className = 'section-example';
+        example.textContent = section.example;
+        sectionDiv.appendChild(example);
+        
+        const promptBoxes = document.createElement('div');
+        promptBoxes.className = 'prompt-boxes';
+        
+        for (let i = 0; i < 4; i++) {
+            const box = document.createElement('div');
+            box.className = 'prompt-box';
+            box.dataset.prompt = i;
+            
+            const content = document.createElement('div');
+            content.className = 'prompt-content';
+            content.textContent = prompts.prompts[section.key][i] || `Prompt ${i + 1}`;
+            
+            box.appendChild(content);
+            box.addEventListener('click', () => openPromptModal(box));
+            promptBoxes.appendChild(box);
+        }
+        
+        sectionDiv.appendChild(promptBoxes);
+        return sectionDiv;
+    }
+    
+    function validateSection() {
+        const currentPrompts = prompts.prompts[currentSectionKey];
+        const isValid = currentPrompts.every(prompt => prompt.trim() !== '');
+        nextButton.classList.toggle('disabled', !isValid);
+        return isValid;
+    }
+    
+    function showLandingPage() {
+        userCode = Math.floor(10000 + Math.random() * 90000).toString();
+        currentSectionIndex = -1;
+        userData = { classe: '', gruppo: '' };
+        
+        // Nascondi l'header con classe e gruppo
+        document.querySelector('.input-row').style.display = 'none';
+        
+        sectionsContainer.innerHTML = `
+            <div class="landing-page">
+                <h1 class="landing-title">Benvenuto</h1>
+                <p class="landing-subtitle">Inserisci i dati del tuo gruppo per iniziare</p>
+                
+                <div class="landing-form">
+                    <div class="form-group">
+                        <label for="landing-classe">Classe</label>
+                        <input type="text" id="landing-classe" placeholder="Inserisci la classe" required>
                     </div>
-                `).join('')}
+                    <div class="form-group">
+                        <label for="landing-gruppo">Nome del Gruppo</label>
+                        <input type="text" id="landing-gruppo" placeholder="Inserisci il nome del gruppo" required>
+                    </div>
+                    <div class="user-code">
+                        <strong>Il tuo codice:</strong> ${userCode}
+                    </div>
+                    <button id="start-collection" class="primary-button" disabled>Inizia la Raccolta →</button>
+                </div>
             </div>
         `;
-        return section;
-    }
 
-    function validateSection() {
-        if (currentSectionIndex === 0) {
-            return validateHeaderInputs();
+        // Nascondi i bottoni di navigazione nella landing
+        prevButton.style.display = 'none';
+        nextButton.style.display = 'none';
+
+        const classeInput = document.getElementById('landing-classe');
+        const gruppoInput = document.getElementById('landing-gruppo');
+        const startButton = document.getElementById('start-collection');
+
+        function validateInputs() {
+            const isValid = classeInput.value.trim() !== '' && gruppoInput.value.trim() !== '';
+            startButton.disabled = !isValid;
         }
 
-        const sectionKey = getSectionKey(currentSectionIndex);
-        const isValid = prompts.prompts[sectionKey].every(prompt => prompt.trim() !== '');
-        nextButton.classList.toggle('disabled', !isValid);
-        return isValid;
-    }
+        classeInput.addEventListener('input', validateInputs);
+        gruppoInput.addEventListener('input', validateInputs);
 
-    function validateHeaderInputs() {
-        prompts.user_data.classe = classeInput.value.trim();
-        prompts.user_data.gruppo = gruppoInput.value.trim();
-        const isValid = prompts.user_data.classe !== '' && prompts.user_data.gruppo !== '';
-        nextButton.classList.toggle('disabled', !isValid);
-        return isValid;
+        startButton.addEventListener('click', () => {
+            userData.classe = classeInput.value.trim();
+            userData.gruppo = gruppoInput.value.trim();
+            document.querySelector('.input-row').style.display = 'grid';
+            showSection(0);
+        });
     }
 
     function showSection(index) {
-        if (index > currentSectionIndex && !validateSection()) {
-            if (currentSectionIndex === 0) {
-                alert('Per favore compila sia la Classe che il Nome Gruppo prima di continuare.');
-            } else {
-                alert('Per favore compila tutti i prompt prima di procedere.');
-            }
-            return;
-        }
-
         currentSectionIndex = index;
+        currentSectionKey = getSectionKey(index);
+        
+        // Aggiorna l'header con i dati utente
+        document.getElementById('user-code-display').textContent = `Codice: ${userCode}`;
+        document.getElementById('classe').value = userData.classe;
+        document.getElementById('gruppo').value = userData.gruppo;
+        
+        // Disabilita i campi di input
+        document.getElementById('classe').disabled = true;
+        document.getElementById('gruppo').disabled = true;
+        
         sectionsContainer.innerHTML = '';
-        const section = createSection(sections[index]);
-        sectionsContainer.appendChild(section);
+        sectionsContainer.appendChild(createSection(sections[index]));
         
-        updateNavigationButtonsText();
+        prevButton.style.display = index === 0 ? 'none' : 'block';
+        nextButton.style.display = 'block';
         
-        section.querySelectorAll('.prompt-box').forEach(box => {
-            box.addEventListener('click', () => openPromptModal(box));
-        });
-
-        updatePromptContents();
+        if (index === sections.length - 1) {
+            nextButton.textContent = 'Lista Prompts';
+        } else {
+            nextButton.textContent = 'Avanti →';
+        }
+        
         validateSection();
     }
 
@@ -154,10 +186,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function updatePromptContents() {
         document.querySelectorAll('.prompt-box').forEach(box => {
             const promptIndex = box.dataset.prompt;
-            const content = prompts.prompts[currentSectionKey][promptIndex] || '';
+            const content = prompts.prompts[currentSectionKey][promptIndex] || `Prompt ${parseInt(promptIndex) + 1}`;
             const contentDiv = box.querySelector('.prompt-content');
             contentDiv.textContent = content;
-            box.classList.toggle('filled', content.trim() !== '');
+            box.classList.toggle('filled', content.trim() !== '' && content !== `Prompt ${parseInt(promptIndex) + 1}`);
         });
         validateSection();
     }
@@ -176,102 +208,94 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     prevButton.addEventListener('click', () => {
-        if (!prevButton.classList.contains('disabled') && currentSectionIndex > 0) {
+        if (currentSectionIndex > 0) {
             showSection(currentSectionIndex - 1);
-        }
-    });
-
-    nextButton.addEventListener('click', () => {
-        if (!nextButton.classList.contains('disabled')) {
-            if (currentSectionIndex < sections.length - 1) {
-                showSection(currentSectionIndex + 1);
-            } else {
-                showReviewPage();
-            }
         }
     });
 
     function showReviewPage() {
         sectionsContainer.innerHTML = `
-            <h2 class="section-title">RIEPILOGO PROMPT</h2>
-            <div class="review-header">
-                <p><strong>Codice Gruppo:</strong> ${prompts.user_data.user_code}</p>
-                <p><strong>Classe:</strong> ${prompts.user_data.classe}</p>
-                <p><strong>Gruppo:</strong> ${prompts.user_data.gruppo}</p>
+            <div class="review-page">
+                <h2 class="section-title">Riepilogo Prompt</h2>
+                <div class="review-header">
+                    <p><strong>Codice:</strong> ${userCode}</p>
+                    <p><strong>Classe:</strong> ${userData.classe}</p>
+                    <p><strong>Gruppo:</strong> ${userData.gruppo}</p>
+                </div>
+                ${sections.map((section, index) => {
+                    const sectionKey = getSectionKey(index);
+                    return `
+                        <div class="section review-section" data-section="${section.key}">
+                            <h3>${section.title}</h3>
+                            ${prompts.prompts[sectionKey].map((value, i) => `
+                                <div class="prompt-review">
+                                    <strong>Prompt ${i + 1}:</strong> 
+                                    <p>${value || '(vuoto)'}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }).join('')}
+                <div class="review-buttons">
+                    <button id="back-to-edit" class="secondary-button">← Torna Indietro</button>
+                    <button id="submit-prompts" class="primary-button">Invia Prompts</button>
+                </div>
             </div>
-            ${sections.map((section, index) => {
-                const sectionKey = getSectionKey(index);
-                return `
-                    <div class="section review-section">
-                        <h3>${section}</h3>
-                        ${prompts.prompts[sectionKey].map((value, i) => `
-                            <div class="prompt-review">
-                                <strong>Prompt ${i + 1}:</strong> 
-                                <p>${value || '(vuoto)'}</p>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }).join('')}
         `;
 
-        const submitButton = document.createElement('button');
-        submitButton.id = 'submit-prompts';
-        submitButton.textContent = 'INVIA I PROMPT';
-        document.body.appendChild(submitButton);
-
-        prevButton.style.display = 'block';
+        // Nascondi i bottoni di navigazione
+        prevButton.style.display = 'none';
         nextButton.style.display = 'none';
 
-        submitButton.addEventListener('click', async () => {
-            submitButton.disabled = true;
-            submitButton.textContent = 'Invio in corso...';
-            
-            try {
-                const response = await fetch('/api/submit/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(prompts)
-                });
-                const result = await response.json();
-                if (result.success) {
-                    const shouldContinue = confirm(`Prompts salvati con successo!\nFile: ${result.filename}\n\nVuoi inserire un nuovo set di prompt?`);
-                    if (shouldContinue) {
-                        userCode = Math.floor(10000 + Math.random() * 90000).toString();
-                        userCodeDisplay.textContent = `Codice Gruppo: ${userCode}`;
-                        const savedClasse = prompts.user_data.classe;
-                        const savedGruppo = prompts.user_data.gruppo;
-                        prompts = {
-                            user_data: {
-                                classe: savedClasse,
-                                user_code: userCode,
-                                gruppo: savedGruppo
-                            },
-                            prompts: {
-                                old: ['', '', '', ''],
-                                recent: ['', '', '', ''],
-                                childhood: ['', '', '', '']
-                            }
-                        };
-                        document.body.removeChild(submitButton);
-                        currentSectionIndex = 0;
-                        showSection(0);
-                    }
-                } else {
-                    alert('Errore: ' + (result.error || 'Errore sconosciuto durante il salvataggio'));
-                }
-            } catch (error) {
-                console.error('Submission error:', error);
-                alert('Errore durante l\'invio dei prompt.');
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'INVIA I PROMPT';
+        // Aggiungi event listeners per i bottoni
+        document.getElementById('back-to-edit').addEventListener('click', () => {
+            showSection(sections.length - 1);
+            prevButton.style.display = 'block';
+            nextButton.style.display = 'block';
+        });
+
+        document.getElementById('submit-prompts').addEventListener('click', submitPrompts);
+    }
+
+    nextButton.addEventListener('click', () => {
+        if (!nextButton.classList.contains('disabled')) {
+            if (currentSectionIndex < sections.length - 1) {
+                showSection(currentSectionIndex + 1);
+            } else if (nextButton.textContent === 'Lista Prompts') {
+                showReviewPage();
             }
+        }
+    });
+
+    function submitPrompts() {
+        const data = {
+            classe: userData.classe,
+            gruppo: userData.gruppo,
+            user_code: userCode,
+            prompts: prompts.prompts
+        };
+        
+        fetch('/api/submit/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Prompts salvati con successo!');
+                window.location.reload(); // Reload della pagina
+            } else {
+                alert('Errore durante il salvataggio: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Errore durante il salvataggio: ' + error);
         });
     }
 
-    showSection(0);
-    validateHeaderInputs();
+    // Start with the landing page
+    showLandingPage();
 });

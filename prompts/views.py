@@ -71,20 +71,29 @@ def submit(request):
             json_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'json_storage')
             os.makedirs(json_dir, exist_ok=True)
             
-            # Extract user data
-            user_data = data.get('user_data', {})
-            classe = user_data.get('classe', '')
-            user_code = user_data.get('user_code', '')
-            gruppo = user_data.get('gruppo', '')
+            # Extract data from the new format
+            classe = data.get('classe', '')
+            user_code = data.get('user_code', '')
+            gruppo = data.get('gruppo', '')
+            prompts = data.get('prompts', {})
             
-            # Generate filename using class, gruppo and user_code
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            data['timestamp'] = timestamp
+            # Create the final data structure
+            final_data = {
+                'user_data': {
+                    'classe': classe,
+                    'user_code': user_code,
+                    'gruppo': gruppo
+                },
+                'prompts': prompts,
+                'timestamp': datetime.now().strftime('%Y%m%d_%H%M%S')
+            }
+            
+            # Generate filename using user_code
             filename = f"{user_code}.json"
             filepath = os.path.join(json_dir, filename)
             
             with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
+                json.dump(final_data, f, ensure_ascii=False, indent=2)
             
             return JsonResponse({'success': True, 'filename': filename})
         except Exception as e:
