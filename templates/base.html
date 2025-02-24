@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Prompt Collector</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <audio id="typewriterSound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjIwLjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAGAAAESAAzMzMzMzMzMzMzMzMzMzMzZmZmZmZmZmZmZmZmZmZmZpiYmJiYmJiYmJiYmJiYmJjMzMzMzMzMzMzMzMzMzMzM/////////////////////wAAAABMYXZjNTguMzUAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARMQU1FMy45OS41VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EMQpg8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" preload="auto"></audio>
+</head>
+<body>
+    <div id="app">
+        <div id="form-container">
+            <div id="header-inputs" class="{% if not show_header %}hidden{% endif %}">
+                <div id="user-code-display"></div>
+                <div class="input-row">
+                    <input type="text" id="classe" placeholder="Classe..." required>
+                    <input type="text" id="gruppo" placeholder="Nome Gruppo..." required>
+                </div>
+            </div>
+            
+            <div id="sections-container">
+                <!-- Sections will be dynamically loaded here -->
+            </div>
+
+            <div id="navigation-buttons">
+                <button id="prev-section" class="nav-button" style="display: none;">← Indietro</button>
+                <button id="next-section" class="nav-button disabled">Avanti →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Template -->
+    <div id="prompt-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Inserisci Prompt</h3>
+            <textarea id="prompt-input" rows="4"></textarea>
+            <div class="modal-buttons">
+                <button id="save-prompt">Salva</button>
+                <button id="close-modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
