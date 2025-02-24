@@ -238,7 +238,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }).join('')}
                 <div class="review-buttons">
                     <button id="back-to-edit" class="secondary-button">← Torna Indietro</button>
+                    <button id="translate-prompts" class="secondary-button">Traduci in Inglese</button>
                     <button id="submit-prompts" class="primary-button">Invia Prompts</button>
+                </div>
+                <div class="review-warning">
+                    <p>⚠️ I prompt sono già tradotti in inglese? Se non lo sono clicca TRADUCI prima di inviare</p>
                 </div>
             </div>
         `;
@@ -252,6 +256,37 @@ document.addEventListener('DOMContentLoaded', () => {
             showSection(sections.length - 1);
             prevButton.style.display = 'block';
             nextButton.style.display = 'block';
+        });
+
+        document.getElementById('translate-prompts').addEventListener('click', () => {
+            const translateButton = document.getElementById('translate-prompts');
+            translateButton.disabled = true;
+            translateButton.textContent = 'Traduzione in corso...';
+            
+            fetch('/api/translate_prompts/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompts: prompts.prompts })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    prompts.prompts = data.translated_prompts;
+                    showReviewPage(); // Aggiorna la pagina con i prompt tradotti
+                    alert('Traduzione completata con successo!');
+                } else {
+                    alert('Errore durante la traduzione: ' + data.error);
+                    translateButton.disabled = false;
+                    translateButton.textContent = 'Traduci in Inglese';
+                }
+            })
+            .catch(error => {
+                alert('Errore durante la traduzione: ' + error);
+                translateButton.disabled = false;
+                translateButton.textContent = 'Traduci in Inglese';
+            });
         });
 
         document.getElementById('submit-prompts').addEventListener('click', submitPrompts);

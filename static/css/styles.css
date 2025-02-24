@@ -386,6 +386,36 @@ button.disabled {
     border: none;
 }
 
+.review-warning {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: rgba(255, 193, 7, 0.1);
+    border-radius: var(--border-radius);
+    text-align: center;
+}
+
+.review-warning p {
+    margin: 0;
+    color: #ffc107;
+    font-size: 0.9rem;
+}
+
+.review-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 3rem;
+}
+
+.review-buttons button {
+    flex: 1;
+}
+
+.review-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Landing page */
 .landing-page {
     max-width: 500px;

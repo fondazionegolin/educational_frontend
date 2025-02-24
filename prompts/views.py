@@ -5,6 +5,14 @@ import json
 import os
 from datetime import datetime
 import requests
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+from django.conf import settings
+
+load_dotenv()
+
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 def get_translation(text, target_language='en'):
     try:
@@ -115,3 +123,41 @@ def get_prompts(request, user_code):
         return JsonResponse(data)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
+def translate_prompts(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            prompts = data.get('prompts', {})
+            
+            translated_prompts = {}
+            
+            for section, section_prompts in prompts.items():
+                translated_prompts[section] = []
+                for prompt in section_prompts:
+                    if prompt.strip():  # Traduci solo se il prompt non è vuoto
+                        response = client.chat.completions.create(
+                            model="gpt-3.5-turbo",
+                            messages=[
+                                {"role": "system", "content": "You are a translator. Translate the following Italian text into English, maintaining the same descriptive style and details. The translation should be suitable for image generation prompts."},
+                                {"role": "user", "content": prompt}
+                            ]
+                        )
+                        translated_prompt = response.choices[0].message.content
+                        translated_prompts[section].append(translated_prompt)
+                    else:
+                        translated_prompts[section].append("")
+            
+            return JsonResponse({
+                'success': True,
+                'translated_prompts': translated_prompts
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
