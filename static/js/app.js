@@ -3,19 +3,21 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             key: 'old',
             title: 'Vecchiaia',
-            example: 'Example: "An elderly gardener with weathered hands and gentle eyes, tending to a lush Mediterranean garden filled with olive trees and aromatic herbs. Soft afternoon sunlight filters through the branches, creating dappled shadows. Photorealistic style with warm, earthy tones."'
+            example: 'Esempio: "Un anziano giardiniere con mani segnate dal tempo e occhi gentili, che si prende cura di un rigoglioso giardino mediterraneo pieno di ulivi ed erbe aromatiche. La luce del pomeriggio filtra attraverso i rami, creando ombre suggestive. Stile fotorealistico con toni caldi e terrosi."'
         },
         {
             key: 'recent',
             title: 'Maturità',
-            example: 'Example: "A determined professional in their 40s working in a modern office space with floor-to-ceiling windows overlooking a vibrant cityscape. Sleek design elements and technology seamlessly integrated into the environment. Contemporary digital art style with dynamic lighting."'
+            example: 'Esempio: "Un professionista determinato sulla quarantina che lavora in un ufficio moderno con finestre a tutta altezza che si affacciano su un panorama urbano vibrante. Elementi di design eleganti e tecnologia perfettamente integrati nell\'ambiente. Stile arte digitale contemporanea con illuminazione dinamica."'
         },
         {
             key: 'childhood',
             title: 'Infanzia',
-            example: 'Example: "A curious child exploring a whimsical playground filled with colorful geometric shapes and fantastical elements. Floating bubbles and paper airplanes in the air, surrounded by imaginative toys. Stylized illustration with bright, playful colors."'
+            example: 'Esempio: "Un bambino curioso che esplora un parco giochi fantasioso pieno di forme geometriche colorate ed elementi fantastici. Bolle fluttuanti e aerei di carta nell\'aria, circondato da giocattoli immaginativi. Stile illustrazione stilizzata con colori vivaci e giocosi."'
         }
     ];
+
+    const MAX_PROMPTS_PER_PHASE = 2;  // Reduced from 4 to 2
 
     let currentSectionIndex = -1; // Start at -1 for landing page
     let currentSectionKey = '';
@@ -35,9 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize prompts object
     const prompts = {
         prompts: {
-            old: Array(4).fill(''),
-            recent: Array(4).fill(''),
-            childhood: Array(4).fill('')
+            old: Array(MAX_PROMPTS_PER_PHASE).fill(''),
+            recent: Array(MAX_PROMPTS_PER_PHASE).fill(''),
+            childhood: Array(MAX_PROMPTS_PER_PHASE).fill('')
         }
     };
 
@@ -68,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const promptBoxes = document.createElement('div');
         promptBoxes.className = 'prompt-boxes';
         
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < MAX_PROMPTS_PER_PHASE; i++) {
             const box = document.createElement('div');
             box.className = 'prompt-box';
             box.dataset.prompt = i;
@@ -103,8 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         sectionsContainer.innerHTML = `
             <div class="landing-page">
-                <h1 class="landing-title">Benvenuto</h1>
-                <p class="landing-subtitle">Inserisci i dati del tuo gruppo per iniziare</p>
+                <h1 class="landing-title">Benvenut* al T-symmetry<h1>
+                <p class="landing-subtitle">In questo progetto, vi guideremo attraverso tre fasi della vita: infanzia, maturità e vecchiaia. Per ciascuna fase, scriverete due prompt creativi che descrivono scene significative di quel periodo. I vostri prompt contribuiranno a creare un archivio di immagini che rappresentano diverse prospettive ed esperienze di vita.</p>
                 
                 <div class="landing-form">
                     <div class="form-group">
@@ -118,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="user-code">
                         <strong>Il tuo codice:</strong> ${userCode}
                     </div>
-                    <button id="start-collection" class="primary-button" disabled>Inizia la Raccolta →</button>
+                    <button id="start-collection" class="primary-button" disabled>Prompt →</button>
                 </div>
             </div>
         `;
@@ -163,13 +165,19 @@ document.addEventListener('DOMContentLoaded', () => {
         sectionsContainer.innerHTML = '';
         sectionsContainer.appendChild(createSection(sections[index]));
         
+        // Mostra/nascondi bottoni e aggiorna i loro testi
         prevButton.style.display = index === 0 ? 'none' : 'block';
         nextButton.style.display = 'block';
         
+        // Aggiorna il testo dei bottoni con le fasi
         if (index === sections.length - 1) {
-            nextButton.textContent = 'Lista Prompts';
+            nextButton.textContent = 'Lista Prompts →';
         } else {
-            nextButton.textContent = 'Avanti →';
+            nextButton.textContent = `${sections[index + 1].title} →`;
+        }
+        
+        if (index > 0) {
+            prevButton.textContent = `← ${sections[index - 1].title}`;
         }
         
         validateSection();
@@ -196,6 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('close-modal').addEventListener('click', () => {
         modal.style.display = 'none';
+        promptInput.value = '';
+        // Rimuovi tutti gli event listener dal promptInput
+        promptInput.replaceWith(promptInput.cloneNode(true));
     });
 
     document.getElementById('save-prompt').addEventListener('click', () => {
@@ -296,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!nextButton.classList.contains('disabled')) {
             if (currentSectionIndex < sections.length - 1) {
                 showSection(currentSectionIndex + 1);
-            } else if (nextButton.textContent === 'Lista Prompts') {
+            } else if (nextButton.textContent === 'Lista Prompts →') {
                 showReviewPage();
             }
         }

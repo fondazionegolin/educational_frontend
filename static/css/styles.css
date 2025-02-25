@@ -521,3 +521,38 @@ button.disabled {
         padding: 1.5rem;
     }
 }
+
+/* Animazione pulsante */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        background-color: #dc3545;
+    }
+    50% {
+        transform: scale(1.05);
+        background-color: #ff4d4d;
+    }
+    100% {
+        transform: scale(1);
+        background-color: #dc3545;
+    }
+}
+
+#submit-prompts {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    animation: pulse 2s infinite;
+    box-shadow: 0 0 15px rgba(220, 53, 69, 0.5);
+}
+
+#submit-prompts:hover {
+    background-color: #c82333;
+    animation: none;
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+}
+
+#submit-prompts:active {
+    transform: scale(0.98);
+}
